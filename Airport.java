@@ -1,4 +1,4 @@
-/**
+/*
  * notes:
  * Flight object array should be without holes after every action
  * check for aliasing
@@ -29,51 +29,45 @@ public class Airport {
      */
     public boolean addFlight(Flight f){
         if(f.getDestination() == _airport || f.getOrigin() == _airport) {
-            //todo: check for faster way to find empty space in flight schedule to insert new flight
-            //todo: also consider check if flight added successfully to flightSchedule array
-            //destination or origin is airport, check if there is space in flightSchedule
             for (int i = 0; i < _flightSchedule.length; i++){
-                // search for empty space inside flightSchedule and set new flight if found
                 if(_flightSchedule[i] == null){
                     _flightSchedule[i] = f;
-//                    System.out.println("Flight " + f.getOrigin() + " has being added.");
                     _noOfFlights = numOfFlights();
-//                    System.out.println("current num of flights is: " + _noOfFlights);
                     return true;
-                    //break; //no need because return breaks the loop
                 }
             }
-            //all flightSchedule is full of flights
             return false;
         } else {
-            //neither dest or origin match the airport
             return false;
         }
+
     }
 
+    /**
+     * remove flight from airport flight array
+     * @param f Flight Object
+     * @return boolean
+     */
     public boolean removeFlight(Flight f){
-        //todo: check with lecturer if on delete set the index to null and/or change other flight index's in array. - yes
         for (int i = 0; i < _noOfFlights; i++){
-            // search for empty space inside flightSchedule and set new flight if found
-            if(_flightSchedule[i] == f){
-//                System.out.println("num of flights before remove: " + _noOfFlights);
+            if(_flightSchedule[i].equals(f)){
                 _flightSchedule[i] = null;
                 _noOfFlights = numOfFlights();
-//                System.out.println("num of flights after remove: " + _noOfFlights);
-                //more test if 0/1 indexs..
-                _flightSchedule[i] = (_flightSchedule[_noOfFlights] != null) ? _flightSchedule[_noOfFlights] : _flightSchedule[_noOfFlights - 1];
-//                System.out.println("num of flights after insert last: " + _noOfFlights);
+                if(i == (_noOfFlights)){
+                    _flightSchedule[_noOfFlights] = null;
+                } else {
+                    _flightSchedule[i] = new Flight(_flightSchedule[_noOfFlights]);
+                    _flightSchedule[_noOfFlights] = null;
+                }
                 return true;
-                //break; //no need because return breaks the loop
             }
         }
-        // flight not found!
         return false;
     }
 
     /**
-     * number of actural flights in flightSchedule array
-     * @return number of flights
+     * returns num of _flightSchedule without null object
+     * @return int
      */
     private int numOfFlights(){
         int count = 0;
@@ -86,19 +80,13 @@ public class Airport {
     }
 
     public Time1 firstFlightFromDestination(String place){
-        //check if airport has place and flights.. else return null
         if(_airport != place || _flightSchedule.length < 1){
             return null;
         }
-        //set first flight as first and start look if there any flight that is before
         Time1 firstFlightInDay = new Time1( _flightSchedule[0].getDeparture() );
         int flights = numOfFlights();
-//        System.out.println("number of flights: " + numOfFlights());
         for (int i = 0; i < flights; i++){
-            //check other flight compare to current firstFlightInDay, skip the first
-//            System.out.println("start loop on index: " + i);
             if( (_flightSchedule[i].getOrigin().equals(place))){
-//                System.out.println("inside loop: " + _flightSchedule[i].getOrigin());
                 Time1 tmp = new Time1( _flightSchedule[i].getDeparture() );
                 if(tmp.before(firstFlightInDay)){
                     firstFlightInDay = tmp;
@@ -110,8 +98,8 @@ public class Airport {
 
     public int howManyFullFlights(){
         int countFullFlights = 0;
-        for (int i = 0; i < _flightSchedule.length; i++){
-            if( _flightSchedule[i] != null && _flightSchedule[i].getIsFull() ){
+        for (int i = 0; i < _noOfFlights; i++){
+            if( _flightSchedule[i].getIsFull() ){
                 countFullFlights++;
             }
         }
@@ -120,182 +108,81 @@ public class Airport {
 
     public int howManyFlightsBetween(String city1, String city2){
         int flightBetweenCitiesCount = 0;
-        for (int i = 0; i < _flightSchedule.length; i++){
-            if(_flightSchedule[i] != null) {
-                if( (_flightSchedule[i].getOrigin() == city1 && _flightSchedule[i].getDestination() == city2) ||
-                        (_flightSchedule[i].getOrigin() == city2 && _flightSchedule[i].getDestination() == city1) ){
-                    flightBetweenCitiesCount++;
-                }
+        for (int i = 0; i < _noOfFlights; i++){
+            if( (_flightSchedule[i].getOrigin() == city1 && _flightSchedule[i].getDestination() == city2) ||
+                    (_flightSchedule[i].getOrigin() == city2 && _flightSchedule[i].getDestination() == city1) ){
+                flightBetweenCitiesCount++;
             }
         }
         return flightBetweenCitiesCount;
     }
 
+    /**
+     * return the most populate city by its destination
+     * @return String
+     */
     public String mostPopularDestination(){
-        //todo:check if in same day
-        //todo: finish this..
-
-        String[] cities = new String[_noOfFlights];
+        int citiesInSameDay = 0;
+        /**
+         * find how many cities does land in day
+         */
         for (int i = 0; i < _noOfFlights; i++){
+            Flight f1 = new Flight("a","b",12,0,210,250,100);
+            Time1 lastTimeInSameDay = new Time1(23,59);
+            f1.setDeparture(lastTimeInSameDay);
+            if(_flightSchedule[i].landsEarlier(f1)){
+                citiesInSameDay++;
+            }
+        }
+        /**
+         * if no flights landed in same day return
+         */
+        if(citiesInSameDay == 0){
+            String response = "there are no flights at that land today!";
+            return new String(response);
+        }
+        /**
+         * set cities array given size of cities that lands in same day
+         * and collect cities of flights
+         */
+        String[] cities = new String[citiesInSameDay];
+        for (int i = 0; i < citiesInSameDay; i++){
             cities[i] = _flightSchedule[i].getDestination();
         }
 
-        //debug..
-        for (int i = 0; i < _noOfFlights; i++){
-            System.out.println(cities[i]);
-        }
-
-        //cities length: 7
-        //cities 4
         int[][] cityByScore = new int[cities.length][cities.length];
         for (int i = 0; i < cities.length; i++){
             cityByScore[i][0] = 0;
         }
-
         /**
-         * []               [city index]
-         * [score index]        [0]
+         * create power table with city index and its score
+         * [[*]]            [city index]
+         * [score index]    [0]
          */
-
-        //check..
-        for (int i = 0; i < cityByScore.length; i++){
-            System.out.println( "score for city: " + cities[i]  + " is " + cityByScore[i][0] );
-        }
-
         for (int i = 0; i < cityByScore.length; i++){
             String city = cities[i];
             for (int j = 0; j < cityByScore.length; j++){
-                //match
                 if( cities[j].equals(city) ){
                     cityByScore[i][0] += 1; //give +1 if match to city by index
                 }
             }
         }
-
-        //check..
-        for (int i = 0; i < cityByScore.length; i++){
-            System.out.println( "score for city: " + cities[i]  + " is " + cityByScore[i][0] );
-        }
-
         /**
-         * find max and get city id
+         * find max score and get its city id
          */
         int[][] max = new int[1][1];
-//        int[][] maxIndex = new int[1][1];
-//        int cityIndex = 0;
         max[0][0] = 0;
-//        maxIndex[0][0] = 0;
         int cityID = 0;
-
-//        int runArrayLength = cityByScore.length - 1;
         for (int i = 0; i < cityByScore.length; i++){
             for (int j = 0; j < cityByScore.length; j++){
-//                System.out.println( cityByScore[i][j] + ":" + max[0][0]);
                 if(cityByScore[i][j] > max[0][0]){
-//                    System.out.println("inside max..");
-                    //set max
-//                    cityIndex = int cityByScore[i];
-                    max[0][0] = cityByScore[i][j]; //value!
-//                    maxIndex[0][0] = cityByScore[i][i]; //index!
-                    cityID = i; //index!
-                    /*
-                    if(max[0][0] == 3){
-//                        System.out.println(cityByScore[i][i]);
-                        System.out.println(i);
-                    }
-                    */
+                    max[0][0] = cityByScore[i][j];
+                    cityID = i;
                 }
             }
         }
-        /**
-         * cityID = max[0]
-         * cityScore = max[0][0]
-         */
-//        int cityID = max[0];
-//        int[][] cityScore = max[0][0];
-//        int cityID = maxIndex[0][0];
-        System.out.println("most populate city by destination is: " + cities[ cityID ]);
-//        System.out.println( "max pts is: " + max[0][0] );
-//        System.out.println( "index is: " + cities[index] );
-        /*
-        System.out.println(cities);
-        System.out.println(cities.length);
-        for (int i = 0; i < cities.length; i++){
-            System.out.println(cities[i]);
-        }
-        */
-
-        String mostPopular = cities[0];
-
-        /*
-        int citiesCount = cities.length;
-        int[][] popularity = new int[citiesCount][1];
-        for (int i = 0; i < cities.length; i++){
-            String city = cities[i]; //tel aviv
-            for (int j = 0; j < cities.length; j++){
-//                if(popularity[i][j] == null)
-//                popularity[i][j] = ( city.equals(cities[j]) ) ?  popularity[i][j+1] : popularity[i][j];
-//                System.out.println(cities[j]);
-//                System.out.println(popularity[i][0]);
-//                System.out.println(cities.length);
-            }
-        }
-        for (int i = 0; i < popularity.length; i++) {
-            System.out.println(popularity[i][0]);
-        }
-        System.out.println(cities.length);
-        for (int i = 0; i < cities.length; i++){
-            System.out.println(cities[i]);
-        }
-        */
-
-        return "";
-
-//        String[][] citiesArray = new String[_noOfFlights][_noOfFlights];
-        /**
-         * [][]
-         * [][]
-         * cities   ["tel-aviv","berlin"]
-         * scores   ["3","1"]
-         * //       city    city
-         * scores   value   value
-         * [0] city
-         * [1] score
-         */
-        /*
-        for (int i = 0; i < _noOfFlights; i++){
-            String city = _flightSchedule[i].getDestination();
-            //city
-            int flag = 0;
-            for (int j = 0; j < _noOfFlights; i++){
-                if(citiesArray[0][j].equals(city)){
-                    flag = 1;
-                    //popularity
-                    if(citiesArray[1][j] != null){
-                        citiesArray[1][j] = citiesArray[1][j] + 1;
-                    } else {
-                        citiesArray[1][j] = 1;
-                    }
-//                    citiesArray[1][j] = ( citiesArray[1][j] != null ) ? citiesArray[1][j] + 1 : new String("1");
-                }
-            }
-
-            if(flag == 0){
-                citiesArray[0][i] = city;
-                citiesArray[1][i] = "1";
-            }
-
-
-        }
-        int max = 0;
-        for (int i=0; i < _noOfFlights; i++){
-            if( citiesArray[1][i] > max ){
-                max = i;
-            }
-        }
-        String mostPopCity = citiesArray[0][max];
-        return mostPopCity;
-        */
+        String response = "most populate city by destination is: " + cities[ cityID ];
+        return new String(response);
     }
 
     public Flight mostExpensiveTicket(){
