@@ -12,7 +12,7 @@ public class Flight {
     /**
      * private declarations
      */
-    private String _dest, _origin;
+    private String _origin ,_dest;
     private Time1 _departure;
     private int _durTimeMinutes, _noOfPass, _price;
     private boolean _isFull;
@@ -30,11 +30,11 @@ public class Flight {
      * @param   noOfPass            The number of passengers (should be between 0-maximum capacity).
      * @param   price               The price (should not be negative).
      */
-    public Flight( String dest, String origin,
+    public Flight( String origin, String dest,
                     int depHour, int depMinute, int durTimeMinutes,
                     int noOfPass, int price ){
-        _dest = dest;
         _origin = origin;
+        _dest = dest;
         _departure = new Time1(depHour, depMinute);
         _durTimeMinutes = durTimeMinutes;
         _noOfPass = validatePassengersCapacity(noOfPass);
