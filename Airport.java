@@ -1,9 +1,6 @@
-/*
- * notes:
- * Flight object array should be without holes after every action
- * check for aliasing
- * write own api on end
- * todo's: remove all debugging
+/**
+ * Maman 13, Java Assingment
+ * @author Leon
  */
 public class Airport {
     private int _noOfFlights;
@@ -28,7 +25,7 @@ public class Airport {
      * @return boolean
      */
     public boolean addFlight(Flight f){
-        if(f.getDestination() == _airport || f.getOrigin() == _airport) {
+        if(f.getDestination().equals(_airport) || f.getOrigin().equals(_airport)) {
             for (int i = 0; i < _flightSchedule.length; i++){
                 if(_flightSchedule[i] == null){
                     _flightSchedule[i] = f;
@@ -79,23 +76,44 @@ public class Airport {
         return count;
     }
 
+    /**
+     * return time of first flight by place
+     * @param place     flight's origin
+     * @return Time1
+     */
     public Time1 firstFlightFromDestination(String place){
-        if(_airport != place || _flightSchedule.length < 1){
+        if(_flightSchedule.length < 1){
             return null;
         }
-        Time1 firstFlightInDay = new Time1( _flightSchedule[0].getDeparture() );
-        int flights = numOfFlights();
-        for (int i = 0; i < flights; i++){
-            if( (_flightSchedule[i].getOrigin().equals(place))){
+
+        int citiesInSameDay = 0;
+        /**
+         * find how many cities does land in day
+         * and with same place
+         */
+        Flight f1 = new Flight("a",place,12,0,210,250,100);
+        Time1 lastTimeInSameDay = new Time1(23,59);
+        f1.setDeparture(lastTimeInSameDay);
+        Time1 firstFlightInDay = new Time1(f1.getDeparture());
+        for (int i = 0; i < _noOfFlights; i++){
+            if(_flightSchedule[i].getDestination().equals(place)){
+                citiesInSameDay++;
                 Time1 tmp = new Time1( _flightSchedule[i].getDeparture() );
                 if(tmp.before(firstFlightInDay)){
-                    firstFlightInDay = tmp;
+                    firstFlightInDay = new Time1( _flightSchedule[i].getDeparture() );
                 }
             }
+        }
+        if(citiesInSameDay == 0){
+            return null; //no cities in same day
         }
         return new Time1(firstFlightInDay);
     }
 
+    /**
+     * count full flight's in airport and return it
+     * @return int
+     */
     public int howManyFullFlights(){
         int countFullFlights = 0;
         for (int i = 0; i < _noOfFlights; i++){
@@ -106,11 +124,17 @@ public class Airport {
         return countFullFlights;
     }
 
+    /**
+     * count flights by origin and destination that land from city1 to city2 or from city2 to city1
+     * @param city1 String  origin/destination
+     * @param city2 String  origin/destination
+     * @return int  flight between 2 places
+     */
     public int howManyFlightsBetween(String city1, String city2){
         int flightBetweenCitiesCount = 0;
         for (int i = 0; i < _noOfFlights; i++){
-            if( (_flightSchedule[i].getOrigin() == city1 && _flightSchedule[i].getDestination() == city2) ||
-                    (_flightSchedule[i].getOrigin() == city2 && _flightSchedule[i].getDestination() == city1) ){
+            if( ((_flightSchedule[i].getOrigin()).equals(city1) && (_flightSchedule[i].getDestination()).equals(city2)) ||
+                    ((_flightSchedule[i].getOrigin()).equals(city2) && (_flightSchedule[i].getDestination()).equals(city1)) ){
                 flightBetweenCitiesCount++;
             }
         }
@@ -138,8 +162,7 @@ public class Airport {
          * if no flights landed in same day return
          */
         if(citiesInSameDay == 0){
-            String response = "there are no flights at that land today!";
-            return new String(response);
+            return "there are no flights at that land today!";
         }
         /**
          * set cities array given size of cities that lands in same day
@@ -155,7 +178,7 @@ public class Airport {
             cityByScore[i][0] = 0;
         }
         /**
-         * create power table with city index and its score
+         * create action table with city index and its score
          * [[*]]            [city index]
          * [score index]    [0]
          */
@@ -181,28 +204,33 @@ public class Airport {
                 }
             }
         }
-        String response = "most populate city by destination is: " + cities[ cityID ];
-        return new String(response);
+        return "most populate city by destination is: " + cities[ cityID ];
     }
 
+    /**
+     * find most expensive ticket in flights that inside the airport
+     * @return Flight Object
+     */
     public Flight mostExpensiveTicket(){
         //todo: what if there more then 1 flight that its ticket is expensive? overwrite current one or not
         Flight mostExpensiveTicketFlight = new Flight( "tmp", "tmp", 0, 0, 0, 0, 0);
-        for (int i = 0; i < _flightSchedule.length; i++){
-            if(_flightSchedule[i] != null) {
-                if (((int) _flightSchedule[i].getPrice()) > ((int) mostExpensiveTicketFlight.getPrice())) {
-                    mostExpensiveTicketFlight = _flightSchedule[i];
-                }
+        for (int i = 0; i < _noOfFlights; i++){
+            if ( _flightSchedule[i].getPrice() > mostExpensiveTicketFlight.getPrice() ){
+                mostExpensiveTicketFlight = new Flight(_flightSchedule[i]);
             }
         }
         return mostExpensiveTicketFlight;
     }
 
+    /**
+     * find the longestFlight inside the airport
+     * @return Flight Object
+     */
     public Flight longestFlight(){
         Flight mostLongestFlight = new Flight( "tmp", "tmp", 0, 0, 0, 0, 0);
         for (int i = 0; i < _flightSchedule.length; i++){
             if(_flightSchedule[i] != null) {
-                if ((int) _flightSchedule[i].getFlightDuration() > (int) mostLongestFlight.getFlightDuration()) {
+                if ( _flightSchedule[i].getFlightDuration() > mostLongestFlight.getFlightDuration() ){
                     mostLongestFlight = _flightSchedule[i];
                 }
             }
@@ -210,25 +238,16 @@ public class Airport {
         return mostLongestFlight;
     }
 
+    /**
+     * return all the flights inside airport Object
+     * @return String
+     */
     public String toString(){
-//        String res = "";
-//        return _flightSchedule.toString();
         System.out.println("The flights for airport " + _airport +" today are:");
-//        return "" + _noOfFlights;
-//        /*
         for (int i = 0; i < _noOfFlights; i++){
-//            res = concat(res,_flightSchedule[i].toString());
-//            res += " " + _flightSchedule[i].toString() + " ";
             System.out.println(_flightSchedule[i]);
-//            return _flightSchedule[i].toString();
         }
-//        res = " t " + _noOfFlights;
         return "";
-        /*
-        return "";
-        */
-//        return response;
-//        return res;
     }
 
 }
