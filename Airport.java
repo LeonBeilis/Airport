@@ -28,7 +28,7 @@ public class Airport {
         if(f.getDestination().equals(_airport) || f.getOrigin().equals(_airport)) {
             for (int i = 0; i < _flightSchedule.length; i++){
                 if(_flightSchedule[i] == null){
-                    _flightSchedule[i] = f;
+                    _flightSchedule[i] = new Flight(f);
                     _noOfFlights = numOfFlights();
                     return true;
                 }
@@ -162,7 +162,8 @@ public class Airport {
          * if no flights landed in same day return
          */
         if(citiesInSameDay == 0){
-            return "there are no flights at that land today!";
+//            return "there are no flights that land today!";
+            return null; //teacher said to return null if none found
         }
         /**
          * set cities array given size of cities that lands in same day
@@ -228,11 +229,9 @@ public class Airport {
      */
     public Flight longestFlight(){
         Flight mostLongestFlight = new Flight( "tmp", "tmp", 0, 0, 0, 0, 0);
-        for (int i = 0; i < _flightSchedule.length; i++){
-            if(_flightSchedule[i] != null) {
-                if ( _flightSchedule[i].getFlightDuration() > mostLongestFlight.getFlightDuration() ){
-                    mostLongestFlight = _flightSchedule[i];
-                }
+        for (int i = 0; i < _noOfFlights; i++){
+            if ( _flightSchedule[i].getFlightDuration() > mostLongestFlight.getFlightDuration() ){
+                mostLongestFlight = new Flight(_flightSchedule[i]);
             }
         }
         return mostLongestFlight;
