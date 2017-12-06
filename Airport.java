@@ -8,9 +8,6 @@ public class Airport {
     private final static int MAX_FLIGHTS = 200;
     private Flight[] _flightSchedule;
 
-    private static final int MINIMUM_MINUTE_RANGE = 0;
-    private static final int MINIMUM_HOUR_RANGE = 0;
-
     public Airport(String city){
         _airport = city;
         _flightSchedule = new Flight[MAX_FLIGHTS];
@@ -43,7 +40,7 @@ public class Airport {
     /**
      * remove flight from airport flight array
      * @param f Flight Object
-     * @return boolean
+     * @return booleanK
      */
     public boolean removeFlight(Flight f){
         for (int i = 0; i < _noOfFlights; i++){
